@@ -39,8 +39,7 @@ namespace PickUpAndHaul
             harmony.Patch(AccessTools.Method(typeof(JobGiver_Idle), "TryGiveJob"), null,
                 new HarmonyMethod(typeof(HarmonyPatches), nameof(IdleJoy_Postfix)), null);
 
-            if (ModCompatibilityCheck.KnownConflict) Log.Message("Pick Up And Haul has found a conflicting mod and will lay dormant.");
-            else Log.Message("PickUpAndHaul v0.18.1.5 welcomes you to RimWorld with pointless logspam.");
+            Log.Message("PickUpAndHaul v0.18.1.6 welcomes you to RimWorld with pointless logspam.");
         }
 
         private static bool Drop_Prefix(ref Pawn pawn, ref Thing thing)
@@ -62,17 +61,9 @@ namespace PickUpAndHaul
         private static void Pawn_InventoryTracker_PostFix(Pawn_InventoryTracker __instance, ref Thing item)
         {
             CompHauledToInventory takenToInventory = __instance.pawn.TryGetComp<CompHauledToInventory>();
-            if (takenToInventory == null)
-            {
-                return;
-            }
-
+            if (takenToInventory == null) return;
+            
             HashSet<Thing> carriedThing = takenToInventory.GetHashSet();
-
-            //if (__instance.pawn.Spawned) //weird issue with worldpawns was caused by not having the comp
-            //{
-            //    if (__instance.pawn.Faction?.IsPlayer ?? false) //roaming muffalo
-            //    {
             if (carriedThing?.Count != 0)
             {
                 if (carriedThing.Contains(item))
@@ -80,17 +71,13 @@ namespace PickUpAndHaul
                     carriedThing.Remove(item);
                 }
             }
-            //    }
-            //} 
         }
 
         private static void JobDriver_HaulToCell_PostFix(JobDriver_HaulToCell __instance)
         {
             CompHauledToInventory takenToInventory = __instance.pawn.TryGetComp<CompHauledToInventory>();
-            if (takenToInventory == null)
-            {
-                return;
-            }
+            if (takenToInventory == null) return;
+
             HashSet<Thing> carriedThing = takenToInventory.GetHashSet();
 
             if (__instance.job.haulMode == HaulMode.ToCellStorage
@@ -133,7 +120,7 @@ namespace PickUpAndHaul
             for (int i = 0; i < instructionList.Count; i++)
             {
                 CodeInstruction instruction = instructionList[i];
-                if (!patched && instruction.operand == playerHome && !ModCompatibilityCheck.KnownConflict)
+                if (!patched && instruction.operand == playerHome && !ModCompatibilityCheck.CombatExtendedIsActive) // CE does the exact same thing, so we don't.
                 //if (instructionList[i + 3].opcode == OpCodes.Callvirt && instruction.operand == playerHome)
                 //if (instructionList[i + 3].operand == playerHome)
                 {

@@ -10,7 +10,7 @@ namespace PickUpAndHaul
     [StaticConstructorOnStartup]
     public class ModCompatibilityCheck
     {
-        public static bool KnownConflict
+        public static bool CombatExtendedIsActive
         {
             get
             {
@@ -18,11 +18,19 @@ namespace PickUpAndHaul
             }
         }
 
-        public static bool Simplesidearms
+        public static bool SimplesidearmsIsActive
         {
             get
             {
                 return ModsConfig.ActiveModsInLoadOrder.Any(m => m.Name == "Simple sidearms");
+            }
+        }
+
+        public static bool ExtendedStorageIsActive
+        {
+            get
+            {
+                return ModsConfig.ActiveModsInLoadOrder.Any(m => m.Name == "ExtendedStorageFluffyHarmonised");
             }
         }
     }

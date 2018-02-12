@@ -11,8 +11,7 @@ namespace PickUpAndHaul
     public class JobDriver_UnloadYourHauledInventory : JobDriver
     {
         private int countToDrop = -1;
-
-        private const int UnloadDuration = 3;
+        private int UnloadDuration = 3;
 
         public override void ExposeData()
         {
@@ -30,15 +29,18 @@ namespace PickUpAndHaul
         /// Find spot, reserve spot, pull thing out of inventory, go to spot, drop stuff, repeat.
         /// </summary>
         /// <returns></returns>
-        [DebuggerHidden]
         protected override IEnumerable<Toil> MakeNewToils()
         {
             CompHauledToInventory takenToInventory = pawn.TryGetComp<CompHauledToInventory>();
             HashSet<Thing> carriedThing = takenToInventory.GetHashSet();
 
+            if (ModCompatibilityCheck.ExtendedStorageIsActive)
+            {
+                UnloadDuration = 12;
+            }
+
             Toil wait = Toils_General.Wait(UnloadDuration);
             Toil celebrate = Toils_General.Wait(UnloadDuration);
-
 
             yield return wait;
             Toil findSpot = new Toil
@@ -98,6 +100,12 @@ namespace PickUpAndHaul
                         this.job.count = this.countToDrop;
                         this.job.SetTarget(TargetIndex.A, thing);
                         carriedThing.Remove(thing);
+                    }
+                    if (ModCompatibilityCheck.CombatExtendedIsActive)
+                    {
+                        CombatExtended.CompInventory ceCompInventory = new CombatExtended.CompInventory();
+                        ceCompInventory.parent = this.pawn;
+                        ceCompInventory.UpdateInventory();
                     }
                     thing.SetForbidden(false, false);
                 }
