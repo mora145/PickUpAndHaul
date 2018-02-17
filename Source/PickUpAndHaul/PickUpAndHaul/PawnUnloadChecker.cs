@@ -21,7 +21,6 @@ namespace PickUpAndHaul
 
             HashSet<Thing> carriedThing = takenToInventory.GetHashSet();
 
-            //if (ModCompatibilityCheck.CombatExtendedIsActive) return;
             if (pawn.Faction != Faction.OfPlayer || !pawn.RaceProps.Humanlike) return;
             if (carriedThing?.Count == 0 || pawn.inventory.innerContainer.Count == 0) return;
 

@@ -14,7 +14,15 @@ namespace PickUpAndHaul
         {
             get
             {
-                return ModsConfig.ActiveModsInLoadOrder.Any(m => m.Name == "Combat Extended" /*|| m.Name == "While You're Up"*/);
+                return ModsConfig.ActiveModsInLoadOrder.Any(m => m.Name == "Combat Extended");
+            }
+        }
+
+        public static bool AllowToolIsActive
+        {
+            get
+            {
+                return ModsConfig.ActiveModsInLoadOrder.Any(m => m.Name == "Allow Tool");
             }
         }
 
@@ -33,5 +41,6 @@ namespace PickUpAndHaul
                 return ModsConfig.ActiveModsInLoadOrder.Any(m => m.Name == "ExtendedStorageFluffyHarmonised");
             }
         }
+
     }
 }

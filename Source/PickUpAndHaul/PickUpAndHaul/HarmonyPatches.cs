@@ -17,6 +17,7 @@ namespace PickUpAndHaul
     static class HarmonyPatches
     {
 
+
         static HarmonyPatches()
         {
             HarmonyInstance harmony = HarmonyInstance.Create("mehni.rimworld.pickupthatcan.main");
@@ -39,7 +40,38 @@ namespace PickUpAndHaul
             harmony.Patch(AccessTools.Method(typeof(JobGiver_Idle), "TryGiveJob"), null,
                 new HarmonyMethod(typeof(HarmonyPatches), nameof(IdleJoy_Postfix)), null);
 
+            if (ModCompatibilityCheck.AllowToolIsActive)
+            {
+                harmony.Patch(AccessTools.Method(typeof(AllowTool.WorkGiver_HaulUrgently), "JobOnThing"),
+                   new HarmonyMethod(typeof(HarmonyPatches), nameof(AllowToolHaulUrgentlyJobOnThing_PreFix)), null, null);
+            }
             Log.Message("PickUpAndHaul v0.18.1.6 welcomes you to RimWorld with pointless logspam.");
+        }
+
+
+        private static bool AllowToolHaulUrgentlyJobOnThing_PreFix(ref Job __result, Pawn pawn, Thing t, bool forced = false)
+        {
+            if (ModCompatibilityCheck.AllowToolIsActive)
+            {
+                //allowTool HaulUrgently
+                CompHauledToInventory takenToInventory = pawn.TryGetComp<CompHauledToInventory>();
+
+                if (pawn.RaceProps.Humanlike
+                    && t is Corpse == false
+                    && takenToInventory != null
+                    && !(ModCompatibilityCheck.SimplesidearmsIsActive && t.def.defName.Contains("Chunk"))
+                    )
+                {
+                    Log.Message(t.Label);
+                    Job haul = new Job(PickUpAndHaulJobDefOf.HaulToInventory, t)
+                    {
+                        count = t.stackCount
+                    };
+                    __result = haul;
+                    return false;
+                }
+            }
+            return true;
         }
 
         private static bool Drop_Prefix(ref Pawn pawn, ref Thing thing)
@@ -73,6 +105,8 @@ namespace PickUpAndHaul
             }
         }
 
+
+
         private static void JobDriver_HaulToCell_PostFix(JobDriver_HaulToCell __instance)
         {
             CompHauledToInventory takenToInventory = __instance.pawn.TryGetComp<CompHauledToInventory>();
@@ -84,7 +118,6 @@ namespace PickUpAndHaul
                 && __instance.pawn.Faction == Faction.OfPlayer
                 && __instance.pawn.RaceProps.Humanlike
                 && __instance.pawn.carryTracker.CarriedThing is Corpse == false
-                //&& !__instance.pawn.carryTracker.CarriedThing.def.defName.Contains("Chunk") //HaulAsideJobFor is handled by HaulMode.ToCellStorage
                 && carriedThing != null
                 && carriedThing.Count !=0) //deliberate hauling job. Should unload.
             {

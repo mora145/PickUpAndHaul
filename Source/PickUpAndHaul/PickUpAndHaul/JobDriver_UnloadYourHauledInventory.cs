@@ -58,7 +58,6 @@ namespace PickUpAndHaul
                     if (unloadableThing.Count != 0)
                     {
                         StoragePriority currentPriority = HaulAIUtility.StoragePriorityAtFor(pawn.Position, unloadableThing.Thing);
-                        //if (!StoreUtility.TryFindBestBetterStoreCellFor(unloadableThing.Thing, pawn, pawn.Map, currentPriority, pawn.Faction, out IntVec3 c, true))
                         if (!StoreUtility.TryFindStoreCellNearColonyDesperate(unloadableThing.Thing, this.pawn, out IntVec3 c))
                         {
                             this.pawn.inventory.innerContainer.TryDrop(unloadableThing.Thing, ThingPlaceMode.Near, unloadableThing.Thing.stackCount, out Thing thing, null);
@@ -101,12 +100,18 @@ namespace PickUpAndHaul
                         this.job.SetTarget(TargetIndex.A, thing);
                         carriedThing.Remove(thing);
                     }
-                    if (ModCompatibilityCheck.CombatExtendedIsActive)
+                    try
                     {
-                        CombatExtended.CompInventory ceCompInventory = new CombatExtended.CompInventory();
-                        ceCompInventory.parent = this.pawn;
-                        ceCompInventory.UpdateInventory();
+                        ((Action)(() =>
+                        {
+                            if (ModCompatibilityCheck.CombatExtendedIsActive)
+                            {
+                                CombatExtended.CompInventory ceCompInventory = pawn.GetComp<CombatExtended.CompInventory>();
+                                ceCompInventory.UpdateInventory();
+                            }
+                        }))();
                     }
+                    catch (TypeLoadException) { }
                     thing.SetForbidden(false, false);
                 }
             };
